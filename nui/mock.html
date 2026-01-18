@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Dialogs - Mock Test</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mock-controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            z-index: 10000;
+            max-width: 350px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .mock-controls h2 {
+            color: #ffffff;
+            font-size: 18px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .mock-section {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .mock-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .mock-section h3 {
+            color: #00ff88;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .mock-button {
+            width: 100%;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .mock-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(3px);
+        }
+
+        .mock-button.active {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: #00ff88;
+        }
+
+        .mock-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 13px;
+        }
+
+        .mock-input:focus {
+            outline: none;
+            border-color: #00ff88;
+        }
+
+        .mock-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .mock-log {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+        }
+
+        .log-entry {
+            color: #a0a0a0;
+            margin-bottom: 5px;
+            padding-left: 10px;
+            border-left: 2px solid #00ff88;
+        }
+
+        .log-entry.success {
+            border-left-color: #00ff88;
+        }
+
+        .log-entry.error {
+            border-left-color: #ff4444;
+        }
+
+        .log-entry.info {
+            border-left-color: #4488ff;
+        }
+
+        .mock-preview {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #e0e0e0;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .mock-preview pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .instructions {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            z-index: 10000;
+            max-width: 300px;
+        }
+
+        .instructions h3 {
+            color: #00ff88;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .instructions ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .instructions li {
+            color: #e0e0e0;
+            font-size: 12px;
+            margin-bottom: 8px;
+            padding-left: 15px;
+        }
+
+        .instructions li::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #00ff88;
+        }
+
+        .npc-preview {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 20px 30px;
+            z-index: 1;
+        }
+
+        .npc-preview img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(0, 255, 136, 0.5);
+        }
+
+        .npc-name {
+            color: #ffffff;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- NPC Preview Placeholder -->
+    <div class="npc-preview">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23444'/%3E%3Ctext x='50' y='55' text-anchor='middle' fill='%23fff' font-size='40'%3E👤%3C/text%3E%3C/svg%3E" alt="NPC">
+        <div class="npc-name">NPC Preview</div>
+    </div>
+
+    <!-- Mock Controls -->
+    <div class="mock-controls">
+        <h2>🎮 Simple Dialogs Mock</h2>
+
+        <div class="mock-section">
+            <h3>Presets</h3>
+            <button class="mock-button" onclick="showSimpleDialog()">Diálogo Simple</button>
+            <button class="mock-button" onclick="showChainDialog()">Cadena de Diálogos</button>
+            <button class="mock-button" onclick="showAnimatedDialog()">Con Animación</button>
+            <button class="mock-button" onclick="showConditionalDialog()">Con Callback</button>
+            <button class="mock-button" onclick="showLongDialog()">Texto Largo</button>
+        </div>
+
+        <div class="mock-section">
+            <h3>Personalizado</h3>
+            <input type="text" class="mock-input" id="speakerInput" placeholder="Nombre del NPC">
+            <textarea class="mock-input" id="textInput" placeholder="Texto del diálogo" rows="2"></textarea>
+            <input type="text" class="mock-input" id="option1Input" placeholder="Opción 1">
+            <input type="text" class="mock-input" id="option2Input" placeholder="Opción 2">
+            <button class="mock-button" onclick="showCustomDialog()">Mostrar Diálogo</button>
+        </div>
+
+        <div class="mock-section">
+            <h3>Acciones</h3>
+            <button class="mock-button" onclick="closeDialog()">Cerrar (ESC)</button>
+            <button class="mock-button" onclick="clearLog()">Limpiar Log</button>
+        </div>
+
+        <div class="mock-section">
+            <h3>Log</h3>
+            <div class="mock-log" id="mockLog"></div>
+        </div>
+
+        <div class="mock-section">
+            <h3>Preview JSON</h3>
+            <div class="mock-preview" id="jsonPreview">
+                <pre>Esperando datos...</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="instructions">
+        <h3>📖 Instrucciones</h3>
+        <ul>
+            <li>Usa los presets para probar diálogos</li>
+            <li>Personaliza speaker, texto y opciones</li>
+            <li>Presiona ESC para cerrar</li>
+            <li>Revisa el log y el preview JSON</li>
+            <li>El diálogo está abajo-centro</li>
+        </ul>
+    </div>
+
+    <!-- Dialog Container -->
+    <div id="dialog-container" class="dialog-container hidden">
+        <div class="dialog-box">
+            <div class="dialog-header">
+                <div id="speaker" class="speaker"></div>
+            </div>
+            <div class="dialog-body">
+                <div id="dialog-text" class="text"></div>
+            </div>
+            <div class="dialog-footer">
+                <div id="options" class="options"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Mock GetParentResourceName function
+        window.GetParentResourceName = function() {
+            return 'simple-dialogs-mock';
+        };
+
+        // Mock dialog state (separate from main.js)
+        let mockCurrentDialog = null;
+        let mockActiveDialogId = null;
+
+        // Dialog presets
+        const dialogs = {
+            simple: {
+                id: "simple_dialog",
+                speaker: "NPC Bienvenida",
+                text: "¡Bienvenido al servidor! ¿En qué puedo ayudarte?",
+                options: [
+                    {
+                        label: "Ver reglas",
+                        description: "Mostrar las reglas del servidor",
+                        next: "rules_dialog"
+                    },
+                    {
+                        label: "Cerrar",
+                        description: "Terminar conversación",
+                        close: true
+                    }
+                ]
+            },
+            rules: {
+                id: "rules_dialog",
+                speaker: "NPC Bienvenida",
+                text: "Las reglas son: 1. Respetar a todos 2. No hacer spam 3. Jugar fair. ¿Entendido?",
+                options: [
+                    { label: "¡Entendido!", close: true },
+                    { label: "¿Puedes repetir?", next: "simple_dialog" }
+                ]
+            },
+            chain: {
+                id: "chain_start",
+                speaker: "Misterioso",
+                text: "¡Hola viajero! ¿Buscas aventura en estas tierras?",
+                animation: {
+                    type: "common",
+                    dict: "gestures@f@standing@casual",
+                    anim: "gesture_point"
+                },
+                options: [
+                    { label: "Sí, estoy listo", next: "chain_mid" },
+                    { label: "No estoy seguro", next: "chain_hesitate" },
+                    { label: "Vete", close: true }
+                ]
+            },
+            chain_mid: {
+                id: "chain_mid",
+                speaker: "Misterioso",
+                text: "¡Excelente! Tu primera misión es investigar el antiguo templo olvidado...",
+                options: [
+                    { label: "Entendido", next: "chain_end" },
+                    { label: "¿Demasiado peligroso?", close: true }
+                ]
+            },
+            chain_hesitate: {
+                id: "chain_hesitate",
+                speaker: "Misterioso",
+                text: "El verdadero valor se encuentra superando el miedo...",
+                options: [
+                    { label: "Vale, empezaré", next: "chain_mid" },
+                    { label: "Prefiero quedarme", close: true }
+                ]
+            },
+            chain_end: {
+                id: "chain_end",
+                speaker: "Misterioso",
+                text: "Busca información en el templo y regresa aquí cuando encuentres algo.",
+                options: [
+                    {
+                        label: "Acepto la misión",
+                        description: "Iniciar misión principal",
+                        close: true
+                    },
+                    { label: "Necesito más información", close: true }
+                ]
+            },
+            animated: {
+                id: "animated_dialog",
+                speaker: "NPC Entusiasta",
+                text: "¡Mira lo que he encontrado! Es increíble, ¿no crees?",
+                animation: {
+                    type: "common",
+                    dict: "anim@mp_facial_tourist",
+                    anim: "look_around_left"
+                },
+                options: [
+                    { label: "¡Impresionante!", close: true },
+                    { label: "¿Qué es eso?", next: "animated_explain" }
+                ]
+            },
+            animated_explain: {
+                id: "animated_explain",
+                speaker: "NPC Entusiasta",
+                text: "Es un artefacto antiguo que puede cambiar el destino del mundo...",
+                options: [
+                    { label: "¡Increíble!", close: true }
+                ]
+            },
+            conditional: {
+                id: "conditional_dialog",
+                speaker: "Guardia VIP",
+                text: "¡Alto! Solo los miembros VIP pueden pasar por aquí.",
+                metadata: {
+                    vipRequired: true,
+                    playerLevel: 10
+                },
+                options: [
+                    {
+                        label: "Mostrar credencial VIP",
+                        description: "Verificar mi membresía",
+                        close: true
+                    },
+                    { label: "Largo de aquí", close: true }
+                ]
+            },
+            long: {
+                id: "long_dialog",
+                speaker: "Narrador",
+                text: "En el reino de los sueños, donde las estrellas bailan al ritmo del viento eterno, existe una leyenda antigua que cuenta la historia de un viajero perdido en el tiempo. Este viajero, buscando respuestas a preguntas que aún no había formulado, cruzó fronteras que ningún mortal había osado cruzar antes. Su viaje no era solo físico, sino también espiritual, y cada paso que daba revelaba nuevos misterios y desafíos que pondrían a prueba su determinación y su fe en el destino que le esperaba.",
+                options: [
+                    { label: "Continuar historia", next: "long_2" },
+                    { label: "Demasiado texto, adiós", close: true }
+                ]
+            },
+            long_2: {
+                id: "long_2",
+                speaker: "Narrador",
+                text: "Con el paso de los siglos, el viajero aprendió que las respuestas más profundas no se encuentran en los libros ni en los mapas, sino en los corazones de aquellos que se atreven a soñar. Y así, su historia se convirtió en leyenda, inspirando a generaciones futuras a seguir su ejemplo de valentía y curiosidad.",
+                options: [
+                    { label: "Fin", close: true }
+                ]
+            }
+        };
+
+        // Logging function
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('mockLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('mockLog').innerHTML = '';
+            log('Log limpiado', 'info');
+        }
+
+        function updateJsonPreview(data) {
+            const preview = document.getElementById('jsonPreview');
+            preview.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        }
+
+        // Mock dialog functions
+        function showDialog(dialogData) {
+            mockCurrentDialog = dialogData;
+
+            if (dialogData.id) {
+                mockActiveDialogId = dialogData.id;
+            }
+
+            $('#speaker').text(dialogData.speaker || '');
+            $('#dialog-text').text(dialogData.text || '');
+
+            $('#options').empty();
+
+            if (dialogData.options && Array.isArray(dialogData.options)) {
+                dialogData.options.forEach((option, index) => {
+                    const optionElement = $('<div></div>')
+                        .addClass('option')
+                        .attr('data-index', index);
+
+                    const label = $('<span></span>')
+                        .addClass('label')
+                        .text(option.label || '');
+
+                    optionElement.append(label);
+
+                    if (option.description) {
+                        const description = $('<span></span>')
+                            .addClass('description')
+                            .text(option.description);
+
+                        optionElement.append(description);
+                    }
+
+                    optionElement.on('click', function() {
+                        selectOption(index);
+                    });
+
+                    $('#options').append(optionElement);
+                });
+            }
+
+            $('#dialog-container').removeClass('hidden');
+
+            updateJsonPreview(dialogData);
+            console.log('[Mock] Dialog shown:', dialogData);
+        }
+
+        function hideDialog() {
+            $('#dialog-container').addClass('hidden');
+
+            mockCurrentDialog = null;
+            mockActiveDialogId = null;
+
+            $('#options').empty();
+            $('#speaker').text('');
+            $('#dialog-text').text('');
+
+            console.log('[Mock] Dialog hidden');
+        }
+
+        function selectOption(index) {
+            if (index === -1) {
+                hideDialog();
+                return;
+            }
+
+            fetch(`https://${GetParentResourceName()}/selectOption`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json; charset=UTF-8'
+                },
+                body: JSON.stringify({
+                    index: index,
+                    dialogId: mockActiveDialogId
+                })
+            })
+            .then(response => response.text())
+            .then(data => {
+                console.log('[Mock] Option selected response:', data);
+            })
+            .catch(error => {
+                console.error('[Mock] Error selecting option:', error);
+            });
+        }
+
+        // Dialog functions for buttons
+        function showSimpleDialog() {
+            showDialog(dialogs.simple);
+            log('Mostrando diálogo simple', 'success');
+        }
+
+        function showChainDialog() {
+            showDialog(dialogs.chain);
+            log('Iniciando cadena de diálogos', 'success');
+        }
+
+        function showAnimatedDialog() {
+            showDialog(dialogs.animated);
+            log('Mostrando diálogo con animación', 'success');
+        }
+
+        function showConditionalDialog() {
+            showDialog(dialogs.conditional);
+            log('Mostrando diálogo con callback', 'success');
+        }
+
+        function showLongDialog() {
+            showDialog(dialogs.long);
+            log('Mostrando diálogo con texto largo', 'success');
+        }
+
+        function showCustomDialog() {
+            const speaker = document.getElementById('speakerInput').value || 'NPC';
+            const text = document.getElementById('textInput').value || '¿En qué puedo ayudarte?';
+            const option1 = document.getElementById('option1Input').value || 'Opción 1';
+            const option2 = document.getElementById('option2Input').value || 'Opción 2';
+
+            const customDialog = {
+                id: "custom_dialog",
+                speaker: speaker,
+                text: text,
+                options: [
+                    { label: option1, close: true },
+                    { label: option2, close: true }
+                ]
+            };
+
+            showDialog(customDialog);
+            log('Mostrando diálogo personalizado', 'success');
+        }
+
+        function closeDialog() {
+            hideDialog();
+            log('Diálogo cerrado', 'info');
+        }
+
+        // Mock fetch for selectOption
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options) {
+            log(`Fetch: ${url}`, 'info');
+
+            if (url.includes('/selectOption')) {
+                return new Promise((resolve) => {
+                    try {
+                        const data = JSON.parse(options.body);
+                        const index = data.index;
+                        log(`Opción seleccionada: ${index}`, 'success');
+
+                        if (mockCurrentDialog && mockCurrentDialog.options && mockCurrentDialog.options[index]) {
+                            const option = mockCurrentDialog.options[index];
+
+                            if (option.next && dialogs[option.next]) {
+                                log(`Navegando a: ${option.next}`, 'info');
+                                setTimeout(() => {
+                                    showDialog(dialogs[option.next]);
+                                }, 500);
+                            } else if (option.close) {
+                                setTimeout(() => {
+                                    hideDialog();
+                                    log('Diálogo cerrado (opción)', 'info');
+                                }, 500);
+                            } else {
+                                log('Opción procesada', 'success');
+                            }
+                        }
+
+                        resolve({
+                            ok: true,
+                            text: () => Promise.resolve('OK')
+                        });
+                    } catch (e) {
+                        log(`Error: ${e.message}`, 'error');
+                        resolve({
+                            ok: false,
+                            text: () => Promise.resolve('Error')
+                        });
+                    }
+                });
+            }
+
+            return originalFetch(url, options);
+        };
+
+        // Initialize
+        $(document).ready(function() {
+            log('Mock de Simple Dialogs inicializado', 'success');
+            log('Presets disponibles: ' + Object.keys(dialogs).length, 'info');
+
+            // ESC key listener
+            $(document).on('keydown', function(e) {
+                if (e.key === 'Escape' && mockActiveDialogId !== null) {
+                    selectOption(-1);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+exports('showDialog', showDialog)
+exports('closeDialog', closeDialog)
+exports('getDialogState', getDialogState)
+exports('isDialogOpen', getDialogState)
+exports('stopAnimations', stopCurrentAnimations)
+
+exports('playAnimation', playAnimation)
+exports('playFacialAnimation', playFacialAnimation)
+exports('getPresetAnimations', getPresetAnimations)
+exports('getPresetFacials', getPresetFacials)
