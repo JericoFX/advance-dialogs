@@ -1,7 +1,7 @@
 fx_version 'cerulean'
 game 'gta5'
 
-author 'Simple Dialogs'
+author 'JericoFX'
 description 'Sistema de diálogos minimalista para FiveM con jQuery'
 version '1.0.0'
 

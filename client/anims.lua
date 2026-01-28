@@ -121,7 +121,8 @@ function playAnimation(ped, presetName, customDuration)
         preset.duration = customDuration
     end
     
-    return exports['simple-dialogs']:showDialog({
+    return exports['advance-dialog']:showDialog({
+        id = "advance_dialog_animation",
         animation = preset
     }, ped, true)
 end
@@ -137,7 +138,8 @@ function playFacialAnimation(ped, presetName, customDuration)
         preset.duration = customDuration
     end
     
-    return exports['simple-dialogs']:showDialog({
+    return exports['advance-dialog']:showDialog({
+        id = "advance_dialog_facial",
         animation = preset
     }, ped, true)
 end

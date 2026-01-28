@@ -1,5 +1,6 @@
 let currentDialog = null;
 let activeDialogId = null;
+let progressTimer = null;
 
 function sanitizeHTML(str) {
     const div = document.createElement('div');
@@ -15,6 +16,10 @@ $(document).ready(function() {
             showDialog(data.data);
         } else if (data.action === 'closeDialog') {
             hideDialog();
+        } else if (data.action === 'progressStart') {
+            startProgress(data.data);
+        } else if (data.action === 'progressEnd') {
+            endProgress();
         }
     });
     
@@ -28,7 +33,7 @@ $(document).ready(function() {
 function showDialog(dialogData) {
     currentDialog = dialogData;
 
-    if (dialogData.id) {
+    if (dialogData.id !== undefined && dialogData.id !== null) {
         activeDialogId = dialogData.id;
     }
 
@@ -42,6 +47,17 @@ function showDialog(dialogData) {
             const optionElement = $('<div></div>')
                 .addClass('option')
                 .attr('data-index', index);
+
+            if (option.disabled) {
+                optionElement.addClass('disabled');
+            }
+
+            if (option.icon) {
+                const icon = $('<span></span>')
+                    .addClass('icon')
+                    .text(sanitizeHTML(option.icon));
+                optionElement.append(icon);
+            }
 
             const label = $('<span></span>')
                 .addClass('label')
@@ -58,6 +74,9 @@ function showDialog(dialogData) {
             }
 
             optionElement.on('click', function() {
+                if (option.disabled) {
+                    return;
+                }
                 selectOption(index);
             });
 
@@ -67,7 +86,7 @@ function showDialog(dialogData) {
 
     $('#dialog-container').removeClass('hidden');
 
-    console.log('[SimpleDialogs] Dialog shown:', dialogData);
+    console.log('[AdvanceDialog] Dialog shown:', dialogData);
 }
 
 function hideDialog() {
@@ -80,7 +99,40 @@ function hideDialog() {
     $('#speaker').text('');
     $('#dialog-text').text('');
     
-    console.log('[SimpleDialogs] Dialog hidden');
+    console.log('[AdvanceDialog] Dialog hidden');
+}
+
+function startProgress(progressData) {
+    const label = (progressData && progressData.label) ? progressData.label : 'Working...';
+    const duration = (progressData && progressData.duration) ? progressData.duration : 1000;
+
+    if (progressTimer) {
+        clearTimeout(progressTimer);
+        progressTimer = null;
+    }
+
+    $('#progress-label').text(label);
+    $('#progress-fill').css({ width: '0%' });
+    $('#progress-container').removeClass('hidden');
+
+    setTimeout(() => {
+        $('#progress-fill').css({ transition: `width ${duration}ms linear`, width: '100%' });
+    }, 10);
+
+    progressTimer = setTimeout(() => {
+        endProgress();
+    }, duration + 50);
+}
+
+function endProgress() {
+    if (progressTimer) {
+        clearTimeout(progressTimer);
+        progressTimer = null;
+    }
+
+    $('#progress-container').addClass('hidden');
+    $('#progress-label').text('');
+    $('#progress-fill').css({ width: '0%', transition: 'none' });
 }
 
 function selectOption(index) {
@@ -100,10 +152,10 @@ function selectOption(index) {
     })
     .then(response => response.text())
     .then(data => {
-        console.log('[SimpleDialogs] Option selected response:', data);
+        console.log('[AdvanceDialog] Option selected response:', data);
     })
     .catch(error => {
-        console.error('[SimpleDialogs] Error selecting option:', error);
+        console.error('[AdvanceDialog] Error selecting option:', error);
     });
 }
 

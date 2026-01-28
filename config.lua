@@ -3,6 +3,7 @@ Config = {
     closeKey = 27,
     defaultAnimDuration = 3000,
     enableDebug = false,
+    progressProvider = "none",
     animationLibrary = {
         "anim@amb@clubhouse@",
         "anim@mp_facial_tourist",

@@ -31,11 +31,13 @@ DialogEnums = {
     },
     
     EventType = {
-        DIALOG_OPEN = "simple-dialogs:open",
-        DIALOG_CLOSE = "simple-dialogs:close",
-        OPTION_SELECTED = "simple-dialogs:optionSelected",
-        ANIMATION_START = "simple-dialogs:animationStart",
-        ANIMATION_END = "simple-dialogs:animationEnd"
+        DIALOG_OPEN = "advance-dialog:open",
+        DIALOG_CLOSE = "advance-dialog:close",
+        OPTION_SELECTED = "advance-dialog:optionSelected",
+        ANIMATION_START = "advance-dialog:animationStart",
+        ANIMATION_END = "advance-dialog:animationEnd",
+        DIALOG_REQUESTED = "advance-dialog:requested",
+        DIALOG_DENIED = "advance-dialog:denied"
     }
 }
 

@@ -1,4 +1,4 @@
-# Cambios Realizados - Simple Dialogs
+# Cambios Realizados - Advance Dialog
 
 ## Verificación Final de Seguridad y Funcionalidad
 
@@ -13,7 +13,7 @@
 #### 1. **client/main.lua**
 ✅ **Agregado:**
 - `registeredDialogs` para almacenar diálogos localmente
-- Evento `simple-dialogs:client:receiveDialog` para recibir diálogos del servidor
+- Evento `advance-dialog:client:receiveDialog` para recibir diálogos del servidor
 - Función `registerDialogs()` exportable para cliente
 - Solicitud al servidor cuando el diálogo no se encuentra localmente
 
@@ -23,7 +23,7 @@
 #### 2. **server/exports.lua**
 ✅ **Corregido:**
 - Eliminado `Config.enableDebug` que causaba error (Config no existe en servidor)
-- Agregado evento `simple-dialogs:server:getDialog` para enviar diálogos a clientes
+- Agregado evento `advance-dialog:server:getDialog` para enviar diálogos a clientes
 
 #### 3. **fxmanifest.lua**
 ✅ **Corregido:**
