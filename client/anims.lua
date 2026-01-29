@@ -1,4 +1,18 @@
+--[[
+    Animation Presets and Exports
+    
+    Provides pre-configured animation and facial expression presets
+    for common use cases.
+    
+    Presets can be used with showDialog() or playAnimation() exports.
+]]
+
+-- ============================================
+-- ANIMATION PRESETS
+-- ============================================
+
 local AnimationPresets = {
+    -- Waving gesture
     WAVE = {
         type = DialogEnums.AnimationType.COMMON,
         dict = "friends@frj@ig_1",
@@ -7,6 +21,7 @@ local AnimationPresets = {
         duration = 3000
     },
     
+    -- Thumbs up gesture
     THUMBS_UP = {
         type = DialogEnums.AnimationType.COMMON,
         dict = "anim@mp_player_intincumbsalute@",
@@ -15,6 +30,7 @@ local AnimationPresets = {
         duration = 3000
     },
     
+    -- Pointing gesture
     POINT = {
         type = DialogEnums.AnimationType.COMMON,
         dict = "gestures@f@standing@casual",
@@ -23,6 +39,7 @@ local AnimationPresets = {
         duration = 2000
     },
     
+    -- Shrugging gesture
     SHRUG = {
         type = DialogEnums.AnimationType.COMMON,
         dict = "gestures@f@standing@casual",
@@ -31,6 +48,7 @@ local AnimationPresets = {
         duration = 2500
     },
     
+    -- Arms crossed stance
     CROSS_ARMS = {
         type = DialogEnums.AnimationType.COMMON,
         dict = "anim@amb@clubhouse@",
@@ -39,6 +57,7 @@ local AnimationPresets = {
         duration = -1
     },
     
+    -- Hands up gesture
     HANDS_UP = {
         type = DialogEnums.AnimationType.COMMON,
         dict = "missminuteman_1ig_2",
@@ -47,6 +66,7 @@ local AnimationPresets = {
         duration = -1
     },
     
+    -- Thinking gesture
     THINKING = {
         type = DialogEnums.AnimationType.COMMON,
         dict = "anim@amb@casino@amb@casino_gamers@gamers@male@001b@male_a@standing@casino_gaming@standing@base",
@@ -55,6 +75,7 @@ local AnimationPresets = {
         duration = -1
     },
     
+    -- Welcome gesture
     WELCOME = {
         type = DialogEnums.AnimationType.COMMON,
         dict = "anim@mp_player_intwelcome@",
@@ -63,6 +84,7 @@ local AnimationPresets = {
         duration = 4000
     },
     
+    -- Goodbye gesture
     BYE = {
         type = DialogEnums.AnimationType.COMMON,
         dict = "special_ped@jane@bail_bond_office@wait@loop@",
@@ -72,37 +94,47 @@ local AnimationPresets = {
     }
 }
 
+-- ============================================
+-- FACIAL EXPRESSION PRESETS
+-- ============================================
+
 local FacialPresets = {
+    -- Happy expression
     HAPPY = {
         type = DialogEnums.AnimationType.FACIAL,
         facial = DialogEnums.FacialExpression.MOOD_HAPPY,
         dict = "facials@gen_male@variations@happy"
     },
     
+    -- Angry expression
     ANGRY = {
         type = DialogEnums.AnimationType.FACIAL,
         facial = DialogEnums.FacialExpression.MOOD_ANGRY,
         dict = "facials@gen_male@variations@angry"
     },
     
+    -- Sad expression
     SAD = {
         type = DialogEnums.AnimationType.FACIAL,
         facial = DialogEnums.FacialExpression.MOOD_SAD,
         dict = "facials@gen_male@variations@sad"
     },
     
+    -- Surprised expression
     SURPRISED = {
         type = DialogEnums.AnimationType.FACIAL,
         facial = DialogEnums.FacialExpression.MOOD_SURPRISED,
         dict = "facials@gen_male@variations@surprised"
     },
     
+    -- Neutral expression
     NEUTRAL = {
         type = DialogEnums.AnimationType.FACIAL,
         facial = DialogEnums.FacialExpression.MOOD_NEUTRAL,
         dict = "facials@gen_male@variations@neutral"
     },
     
+    -- Suspicious expression
     SUSPICIOUS = {
         type = DialogEnums.AnimationType.FACIAL,
         facial = DialogEnums.FacialExpression.MOOD_SUSPICIOUS,
@@ -110,6 +142,18 @@ local FacialPresets = {
     }
 }
 
+-- ============================================
+-- PUBLIC FUNCTIONS
+-- ============================================
+
+--[[
+    Play a preset animation on a ped
+    
+    @param ped: Ped entity handle
+    @param presetName: Name of preset (e.g., "WAVE", "THUMBS_UP")
+    @param customDuration: Optional custom duration override
+    @return: success, errorMessage
+]]
 function playAnimation(ped, presetName, customDuration)
     if not presetName or not AnimationPresets[presetName] then
         return false, "Invalid animation preset"
@@ -121,12 +165,20 @@ function playAnimation(ped, presetName, customDuration)
         preset.duration = customDuration
     end
     
-    return exports['advance-dialog']:showDialog({
+    return exports[GetCurrentResourceName()]:showDialog({
         id = "advance_dialog_animation",
         animation = preset
     }, ped, true)
 end
 
+--[[
+    Play a preset facial animation on a ped
+    
+    @param ped: Ped entity handle
+    @param presetName: Name of preset (e.g., "HAPPY", "ANGRY")
+    @param customDuration: Optional custom duration override
+    @return: success, errorMessage
+]]
 function playFacialAnimation(ped, presetName, customDuration)
     if not presetName or not FacialPresets[presetName] then
         return false, "Invalid facial preset"
@@ -138,19 +190,31 @@ function playFacialAnimation(ped, presetName, customDuration)
         preset.duration = customDuration
     end
     
-    return exports['advance-dialog']:showDialog({
+    return exports[GetCurrentResourceName()]:showDialog({
         id = "advance_dialog_facial",
         animation = preset
     }, ped, true)
 end
 
+--[[
+    Get all animation presets
+    @return: Table of presets
+]]
 function getPresetAnimations()
     return AnimationPresets
 end
 
+--[[
+    Get all facial expression presets
+    @return: Table of presets
+]]
 function getPresetFacials()
     return FacialPresets
 end
+
+-- ============================================
+-- EXPORTS
+-- ============================================
 
 exports('playAnimation', playAnimation)
 exports('playFacialAnimation', playFacialAnimation)

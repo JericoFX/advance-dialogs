@@ -2,20 +2,27 @@ fx_version 'cerulean'
 game 'gta5'
 
 author 'JericoFX'
-description 'Sistema de diálogos minimalista para FiveM con jQuery'
-version '1.0.0'
+description 'Sistema de diálogos minimalista para FiveM'
+version '1.1.0'
 
 ui_page 'nui/index.html'
 
-client_script 'config.lua'
-client_script 'shared/enums.lua'
+shared_scripts {
+    'shared/enums.lua',
+    'locales/*.lua'
+}
+
 client_scripts {
+    'config.lua',
+    'client/utils.lua',
+    'client/camera.lua',
+    'client/ped.lua',
+    'client/tasks.lua',
     'client/main.lua',
     'client/anims.lua',
     'client/exports.lua'
 }
 
-shared_script 'shared/enums.lua'
 server_script 'server/exports.lua'
 
 files {
