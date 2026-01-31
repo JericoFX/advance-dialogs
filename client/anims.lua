@@ -7,10 +7,46 @@
     Presets can be used with showDialog() or playAnimation() exports.
 ]]
 
+---@class AnimationPreset
+---@field type string
+---@field dict string
+---@field anim string
+---@field flag number
+---@field duration number
+
+---@class FacialPreset
+---@field type string
+---@field facial string
+---@field dict string
+
+---@class AnimationPresetsTable
+---@field WAVE AnimationPreset
+---@field THUMBS_UP AnimationPreset
+---@field POINT AnimationPreset
+---@field SHRUG AnimationPreset
+---@field CROSS_ARMS AnimationPreset
+---@field HANDS_UP AnimationPreset
+---@field THINKING AnimationPreset
+---@field WELCOME AnimationPreset
+---@field BYE AnimationPreset
+
+---@class FacialPresetsTable
+---@field HAPPY FacialPreset
+---@field ANGRY FacialPreset
+---@field SAD FacialPreset
+---@field SURPRISED FacialPreset
+---@field NEUTRAL FacialPreset
+---@field SUSPICIOUS FacialPreset
+
+-- Cache frequently used natives
+local GetCurrentResourceNameCached = GetCurrentResourceName
+local DoesEntityExistCached = DoesEntityExist
+
 -- ============================================
 -- ANIMATION PRESETS
 -- ============================================
 
+---@type AnimationPresetsTable
 local AnimationPresets = {
     -- Waving gesture
     WAVE = {
@@ -98,6 +134,7 @@ local AnimationPresets = {
 -- FACIAL EXPRESSION PRESETS
 -- ============================================
 
+---@type FacialPresetsTable
 local FacialPresets = {
     -- Happy expression
     HAPPY = {
@@ -146,14 +183,10 @@ local FacialPresets = {
 -- PUBLIC FUNCTIONS
 -- ============================================
 
---[[
-    Play a preset animation on a ped
-    
-    @param ped: Ped entity handle
-    @param presetName: Name of preset (e.g., "WAVE", "THUMBS_UP")
-    @param customDuration: Optional custom duration override
-    @return: success, errorMessage
-]]
+---@param ped number
+---@param presetName string
+---@param customDuration? number
+---@return boolean, string?
 function playAnimation(ped, presetName, customDuration)
     if not presetName or not AnimationPresets[presetName] then
         return false, "Invalid animation preset"
@@ -165,20 +198,16 @@ function playAnimation(ped, presetName, customDuration)
         preset.duration = customDuration
     end
     
-    return exports[GetCurrentResourceName()]:showDialog({
+    return exports[GetCurrentResourceNameCached()]:showDialog({
         id = "advance_dialog_animation",
         animation = preset
     }, ped, true)
 end
 
---[[
-    Play a preset facial animation on a ped
-    
-    @param ped: Ped entity handle
-    @param presetName: Name of preset (e.g., "HAPPY", "ANGRY")
-    @param customDuration: Optional custom duration override
-    @return: success, errorMessage
-]]
+---@param ped number
+---@param presetName string
+---@param customDuration? number
+---@return boolean, string?
 function playFacialAnimation(ped, presetName, customDuration)
     if not presetName or not FacialPresets[presetName] then
         return false, "Invalid facial preset"
@@ -190,24 +219,18 @@ function playFacialAnimation(ped, presetName, customDuration)
         preset.duration = customDuration
     end
     
-    return exports[GetCurrentResourceName()]:showDialog({
+    return exports[GetCurrentResourceNameCached()]:showDialog({
         id = "advance_dialog_facial",
         animation = preset
     }, ped, true)
 end
 
---[[
-    Get all animation presets
-    @return: Table of presets
-]]
+---@return AnimationPresetsTable
 function getPresetAnimations()
     return AnimationPresets
 end
 
---[[
-    Get all facial expression presets
-    @return: Table of presets
-]]
+---@return FacialPresetsTable
 function getPresetFacials()
     return FacialPresets
 end

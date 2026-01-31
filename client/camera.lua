@@ -14,6 +14,52 @@
     - Configurable via Config table
 ]]
 
+---@class CameraContext
+---@field ped number
+---@field playerPed number
+---@field [string] any
+
+---@class LerpCoords
+---@field x number
+---@field y number
+---@field z number
+
+---@class CameraAction
+---@field mode? "static" | "follow" | "track" | "orbit"
+---@field target? string | number
+---@field bone? string
+---@field offset? table | fun(ctx: CameraContext): table
+---@field coords? table | fun(ctx: CameraContext): table
+---@field radius? number | fun(ctx: CameraContext): number
+---@field height? number | fun(ctx: CameraContext): number
+---@field speed? number | fun(ctx: CameraContext): number
+---@field fov? number | fun(ctx: CameraContext): number
+---@field lerp? boolean | fun(ctx: CameraContext): boolean
+---@field autoDestroy? boolean | fun(ctx: CameraContext): boolean
+---@field fadeTime? number | fun(ctx: CameraContext): number
+---@field lookAt? table | string
+
+-- Cache frequently used natives
+local GetCurrentResourceNameCached = GetCurrentResourceName
+local PlayerPedIdCached = PlayerPedId
+local DoesEntityExistCached = DoesEntityExist
+local GetEntityCoordsCached = GetEntityCoords
+local GetEntityBoneIndexByNameCached = GetEntityBoneIndexByName
+local GetWorldPositionOfEntityBoneCached = GetWorldPositionOfEntityBone
+local CreateCamCached = CreateCam
+local SetCamCoordCached = SetCamCoord
+local SetCamFovCached = SetCamFov
+local PointCamAtCoordCached = PointCamAtCoord
+local RenderScriptCamsCached = RenderScriptCams
+local DestroyCamCached = DestroyCam
+local GetGameplayCamCoordCached = GetGameplayCamCoord
+local GetEntityHeadingCached = GetEntityHeading
+local GetHeadingFromVector_2dCached = GetHeadingFromVector_2d
+local SetGameplayCamRelativeHeadingCached = SetGameplayCamRelativeHeading
+local SetGameplayCamRelativePitchCached = SetGameplayCamRelativePitch
+local WaitCached = Wait
+
+
 local activeTaskCamera = nil
 local activeCameraThread = nil
 local cameraConfig = nil
@@ -25,24 +71,18 @@ local lastCameraPosition = nil
 -- UTILITY FUNCTIONS
 -- ============================================
 
---[[
-    Linear interpolation between two values
-    @param current: Current value
-    @param target: Target value
-    @param factor: Interpolation factor (0.0-1.0)
-    @return: Interpolated value
-]]
+---@param current number
+---@param target number
+---@param factor number
+---@return number
 local function lerp(current, target, factor)
     return current + (target - current) * factor
 end
 
---[[
-    Linear interpolation for 3D coordinates
-    @param from: {x, y, z} current position
-    @param to: {x, y, z} target position
-    @param factor: Interpolation factor
-    @return: {x, y, z} interpolated position
-]]
+---@param from LerpCoords
+---@param to LerpCoords
+---@param factor number
+---@return LerpCoords
 local function lerpCoords(from, to, factor)
     return {
         x = lerp(from.x, to.x, factor),
@@ -51,12 +91,9 @@ local function lerpCoords(from, to, factor)
     }
 end
 
---[[
-    Resolve value - if it's a function, call it with ctx, otherwise return value
-    @param value: Value or function(ctx)
-    @param ctx: Context object
-    @return: Resolved value
-]]
+---@param value any
+---@param ctx CameraContext
+---@return any
 local function resolveValue(value, ctx)
     if type(value) == "function" then
         return value(ctx)
@@ -64,13 +101,10 @@ local function resolveValue(value, ctx)
     return value
 end
 
---[[
-    Resolve camera target entity and optionally specific bone
-    @param target: Target type string ("ped", "player", "vehicle", "engine")
-    @param bone: Optional bone name string
-    @param ctx: Context object
-    @return: Entity handle, or nil if not found
-]]
+---@param target string
+---@param bone? string
+---@param ctx CameraContext
+---@return number | nil
 local function resolveCameraTarget(target, bone, ctx)
     local targetEntity = nil
     
@@ -86,23 +120,20 @@ local function resolveCameraTarget(target, bone, ctx)
     return targetEntity
 end
 
---[[
-    Get world coordinates of a specific bone on an entity
-    @param entity: Entity handle
-    @param boneName: Name of the bone
-    @return: {x, y, z} world coordinates, or nil if bone not found
-]]
+---@param entity number
+---@param boneName string
+---@return LerpCoords | nil
 local function getBoneWorldCoords(entity, boneName)
-    if not entity or not DoesEntityExist(entity) or not boneName then
+    if not entity or not DoesEntityExistCached(entity) or not boneName then
         return nil
     end
     
-    local boneIndex = GetEntityBoneIndexByName(entity, boneName)
+    local boneIndex = GetEntityBoneIndexByNameCached(entity, boneName)
     if boneIndex == -1 then
         return nil
     end
     
-    local coords = GetWorldPositionOfEntityBone(entity, boneIndex)
+    local coords = GetWorldPositionOfEntityBoneCached(entity, boneIndex)
     return {x = coords.x, y = coords.y, z = coords.z}
 end
 
@@ -110,11 +141,8 @@ end
 -- CAMERA TRACKING SYSTEM
 -- ============================================
 
---[[
-    Start camera tracking thread based on mode
-    @param config: Camera configuration table
-    @param ctx: Context object
-]]
+---@param config table
+---@param ctx CameraContext
 local function startCameraTracking(config, ctx)
     -- Stop any existing tracking
     stopCameraTracking()
@@ -125,13 +153,13 @@ local function startCameraTracking(config, ctx)
     cameraOrbitAngle = 0
     lastCameraPosition = nil
     
-    if not cameraTargetEntity or not DoesEntityExist(cameraTargetEntity) then
-        print(string.format('[%s] Camera target not found: %s', GetCurrentResourceName(), tostring(config.target)))
+    if not cameraTargetEntity or not DoesEntityExistCached(cameraTargetEntity) then
+        print(string.format('[%s] Camera target not found: %s', GetCurrentResourceNameCached(), tostring(config.target)))
         return
     end
     
     -- Get initial position for lerp
-    local initialCoords = GetEntityCoords(cameraTargetEntity)
+    local initialCoords = GetEntityCoordsCached(cameraTargetEntity)
     if config.bone then
         local boneCoords = getBoneWorldCoords(cameraTargetEntity, config.bone)
         if boneCoords then
@@ -165,17 +193,17 @@ local function startCameraTracking(config, ctx)
     -- Start tracking thread
     activeCameraThread = true
     
-    Citizen.CreateThread(function()
+    CreateThread(function()
         while activeCameraThread do
-            if not cameraTargetEntity or not DoesEntityExist(cameraTargetEntity) then
+            if not cameraTargetEntity or not DoesEntityExistCached(cameraTargetEntity) then
                 if Config.enableDebug then
-                    print(string.format('[%s] Camera target no longer exists, stopping tracking', GetCurrentResourceName()))
+                    print(string.format('[%s] Camera target no longer exists, stopping tracking', GetCurrentResourceNameCached()))
                 end
                 break
             end
             
             -- Get target position
-            local targetCoords = GetEntityCoords(cameraTargetEntity)
+            local targetCoords = GetEntityCoordsCached(cameraTargetEntity)
             
             -- If bone specified, use bone position
             if cameraConfig.bone then
@@ -235,16 +263,16 @@ local function startCameraTracking(config, ctx)
             
             -- Update camera position
             if newCamPos and activeTaskCamera then
-                SetCamCoord(activeTaskCamera, newCamPos.x, newCamPos.y, newCamPos.z)
+                SetCamCoordCached(activeTaskCamera, newCamPos.x, newCamPos.y, newCamPos.z)
                 lastCameraPosition = newCamPos
                 
                 -- For track and orbit modes, point camera at target
                 if cameraConfig.mode == "track" or cameraConfig.mode == "orbit" then
-                    PointCamAtCoord(activeTaskCamera, targetCoords.x, targetCoords.y, targetCoords.z)
+                    PointCamAtCoordCached(activeTaskCamera, targetCoords.x, targetCoords.y, targetCoords.z)
                 end
             end
             
-            Citizen.Wait(0) -- Run every frame for smooth movement
+            WaitCached(0) -- Run every frame for smooth movement
         end
         
         activeCameraThread = nil
@@ -252,21 +280,18 @@ local function startCameraTracking(config, ctx)
     
     if Config.enableDebug then
         print(string.format('[%s] Camera tracking started: mode=%s, target=%s, bone=%s', 
-            GetCurrentResourceName(), 
+            GetCurrentResourceNameCached(), 
             cameraConfig.mode, 
             tostring(cameraConfig.target),
             tostring(cameraConfig.bone)))
     end
 end
 
---[[
-    Stop camera tracking thread
-]]
 function stopCameraTracking()
     if activeCameraThread then
         activeCameraThread = false
         -- Wait a frame to ensure thread stops
-        Citizen.Wait(0)
+        WaitCached(0)
     end
     
     cameraConfig = nil
@@ -274,7 +299,7 @@ function stopCameraTracking()
     lastCameraPosition = nil
     
     if Config.enableDebug then
-        print(string.format('[%s] Camera tracking stopped', GetCurrentResourceName()))
+        print(string.format('[%s] Camera tracking stopped', GetCurrentResourceNameCached()))
     end
 end
 
@@ -282,17 +307,14 @@ end
 -- PUBLIC FUNCTIONS
 -- ============================================
 
---[[
-    Point gameplay camera at entity (for dialog opening)
-    @param entity: Entity to point camera at
-]]
+---@param entity number
 function pointCameraAtEntity(entity)
-    if not entity or not DoesEntityExist(entity) then
+    if not entity or not DoesEntityExistCached(entity) then
         return
     end
     
-    local playerPed = PlayerPedId()
-    if not playerPed or not DoesEntityExist(playerPed) then
+    local playerPed = PlayerPedIdCached()
+    if not playerPed or not DoesEntityExistCached(playerPed) then
         return
     end
     
@@ -300,15 +322,15 @@ function pointCameraAtEntity(entity)
         return
     end
     
-    local camCoords = GetGameplayCamCoord()
-    local targetCoords = GetEntityCoords(entity)
+    local camCoords = GetGameplayCamCoordCached()
+    local targetCoords = GetEntityCoordsCached(entity)
     
     local dx = targetCoords.x - camCoords.x
     local dy = targetCoords.y - camCoords.y
     local dz = targetCoords.z - camCoords.z
     
-    local targetHeading = GetHeadingFromVector_2d(dx, dy)
-    local playerHeading = GetEntityHeading(playerPed)
+    local targetHeading = GetHeadingFromVector_2dCached(dx, dy)
+    local playerHeading = GetEntityHeadingCached(playerPed)
     local relativeHeading = targetHeading - playerHeading
     
     if relativeHeading > 180.0 then
@@ -317,46 +339,40 @@ function pointCameraAtEntity(entity)
         relativeHeading = relativeHeading + 360.0
     end
     
-    SetGameplayCamRelativeHeading(relativeHeading)
+    SetGameplayCamRelativeHeadingCached(relativeHeading)
     
     local distance = math.sqrt(dx * dx + dy * dy)
     if distance > 0.001 then
         local pitch = -math.deg(math.atan(dz, distance))
         pitch = clamp(pitch, -89.0, 89.0)
-        SetGameplayCamRelativePitch(pitch, 1.0)
+        SetGameplayCamRelativePitchCached(pitch, 1.0)
     end
 end
 
---[[
-    Destroy active task camera and stop tracking
-]]
 function destroyTaskCamera()
     -- Stop tracking first
     stopCameraTracking()
     
     -- Destroy camera
     if activeTaskCamera then
-        RenderScriptCams(false, true, 250, true, true)
-        DestroyCam(activeTaskCamera, false)
+        RenderScriptCamsCached(false, true, 250, true, true)
+        DestroyCamCached(activeTaskCamera, false)
         activeTaskCamera = nil
         
         if Config.enableDebug then
-            print(string.format('[%s] Task camera destroyed', GetCurrentResourceName()))
+            print(string.format('[%s] Task camera destroyed', GetCurrentResourceNameCached()))
         end
     end
 end
 
---[[
-    Create task camera with support for dynamic modes
-    @param action: Camera action configuration
-    @param ctx: Context object containing ped, playerPed, etc.
-]]
+---@param action CameraAction
+---@param ctx CameraContext
 function createTaskCamera(action, ctx)
     -- Destroy any existing camera
     destroyTaskCamera()
     
     -- Create new camera
-    activeTaskCamera = CreateCam("DEFAULT_SCRIPTED_CAMERA", true)
+    activeTaskCamera = CreateCamCached("DEFAULT_SCRIPTED_CAMERA", true)
     
     -- Resolve configuration with support for function values
     local config = {
@@ -381,27 +397,27 @@ function createTaskCamera(action, ctx)
     if config.mode == "static" then
         -- STATIC MODE: Original behavior
         local coords = config.coords
-        if not coords and targetEntity and DoesEntityExist(targetEntity) then
+        if not coords and targetEntity and DoesEntityExistCached(targetEntity) then
             coords = getCoordsFromOffset(targetEntity, config.offset)
         end
         
         if coords then
-            SetCamCoord(activeTaskCamera, coords.x, coords.y, coords.z)
+            SetCamCoordCached(activeTaskCamera, coords.x, coords.y, coords.z)
         end
         
     elseif config.mode == "follow" or config.mode == "track" or config.mode == "orbit" then
         -- DYNAMIC MODES: Start tracking
-        if targetEntity and DoesEntityExist(targetEntity) then
+        if targetEntity and DoesEntityExistCached(targetEntity) then
             -- Set initial position
             if config.mode == "follow" then
-                local targetCoords = GetEntityCoords(targetEntity)
+                local targetCoords = GetEntityCoordsCached(targetEntity)
                 if config.bone then
                     local boneCoords = getBoneWorldCoords(targetEntity, config.bone)
                     if boneCoords then targetCoords = boneCoords end
                 end
                 
                 local offset = config.offset or {x = 0, y = 0, z = 0}
-                SetCamCoord(activeTaskCamera, 
+                SetCamCoordCached(activeTaskCamera, 
                     targetCoords.x + offset.x,
                     targetCoords.y + offset.y,
                     targetCoords.z + offset.z
@@ -414,15 +430,15 @@ function createTaskCamera(action, ctx)
                     coords = getCoordsFromOffset(targetEntity, {x = -2.0, y = -2.0, z = 1.5})
                 end
                 if coords then
-                    SetCamCoord(activeTaskCamera, coords.x, coords.y, coords.z)
+                    SetCamCoordCached(activeTaskCamera, coords.x, coords.y, coords.z)
                 end
                 
             elseif config.mode == "orbit" then
                 -- Start at initial orbit position
-                local targetCoords = GetEntityCoords(targetEntity)
+                local targetCoords = GetEntityCoordsCached(targetEntity)
                 local radius = config.radius or 3.0
                 local height = config.height or 1.5
-                SetCamCoord(activeTaskCamera,
+                SetCamCoordCached(activeTaskCamera,
                     targetCoords.x + radius,
                     targetCoords.y,
                     targetCoords.z + height
@@ -432,13 +448,13 @@ function createTaskCamera(action, ctx)
             -- Start the tracking thread
             startCameraTracking(config, ctx)
         else
-            print(string.format('[%s] Cannot start camera tracking: target not found', GetCurrentResourceName()))
+            print(string.format('[%s] Cannot start camera tracking: target not found', GetCurrentResourceNameCached()))
         end
     end
     
     -- Set FOV and render
-    SetCamFov(activeTaskCamera, config.fov)
-    RenderScriptCams(true, true, config.fadeTime, true, true)
+    SetCamFovCached(activeTaskCamera, config.fov)
+    RenderScriptCamsCached(true, true, config.fadeTime, true, true)
     
     -- Handle lookAt for static mode
     if config.mode == "static" and action.lookAt then
@@ -451,15 +467,12 @@ function createTaskCamera(action, ctx)
     
     if Config.enableDebug then
         print(string.format('[%s] Task camera created: mode=%s, fov=%.1f', 
-            GetCurrentResourceName(), config.mode, config.fov))
+            GetCurrentResourceNameCached(), config.mode, config.fov))
     end
 end
 
---[[
-    Point task camera at coordinates or target
-    @param action: LookAt action configuration
-    @param ctx: Context object
-]]
+---@param action table
+---@param ctx CameraContext
 function lookAtTaskCamera(action, ctx)
     if not activeTaskCamera then
         return
@@ -471,12 +484,12 @@ function lookAtTaskCamera(action, ctx)
     if not coords and action.target then
         local targetEntity = resolveCameraTarget(action.target, action.bone, ctx)
         
-        if targetEntity and DoesEntityExist(targetEntity) then
+        if targetEntity and DoesEntityExistCached(targetEntity) then
             if action.target == "engine" then
                 coords = getEngineCoords(targetEntity)
             else
                 -- Get entity position or bone position
-                coords = GetEntityCoords(targetEntity)
+                coords = GetEntityCoordsCached(targetEntity)
                 if action.bone then
                     local boneCoords = getBoneWorldCoords(targetEntity, action.bone)
                     if boneCoords then coords = boneCoords end
@@ -486,22 +499,16 @@ function lookAtTaskCamera(action, ctx)
     end
     
     if coords then
-        PointCamAtCoord(activeTaskCamera, coords.x, coords.y, coords.z)
+        PointCamAtCoordCached(activeTaskCamera, coords.x, coords.y, coords.z)
     end
 end
 
---[[
-    Get active task camera handle
-    @return: Camera handle or nil
-]]
+---@return number | nil
 function getActiveTaskCamera()
     return activeTaskCamera
 end
 
---[[
-    Check if camera is currently tracking
-    @return: Boolean
-]]
+---@return boolean
 function isCameraTracking()
     return activeCameraThread ~= nil
 end

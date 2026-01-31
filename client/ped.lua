@@ -1,5 +1,96 @@
+--[[
+    Ped Management System
+    
+    Handles creation, customization, and cleanup of peds.
+]]
+
+---@class PedComponent
+---@field componentId? number
+---@field component? number
+---@field drawableId? number
+---@field drawable? number
+---@field textureId? number
+---@field texture? number
+---@field paletteId? number
+---@field palette? number
+
+---@class PedProp
+---@field propId? number
+---@field id? number
+---@field drawableId? number
+---@field drawable? number
+---@field textureId? number
+---@field texture? number
+---@field attach? boolean
+
+---@class PedFaceFeature
+---@field index number
+---@field scale number
+
+---@class PedWeapon
+---@field name string
+---@field ammo? number
+
+---@class PedAnim
+---@field dict string
+---@field name string
+---@field blendIn? number
+---@field blendOut? number
+---@field duration? number
+---@field flag? number
+
+---@class PedRelationship
+---@field hash? number
+---@field group? string
+
+---@class PedAppearance
+---@field components? PedComponent[]
+---@field props? PedProp[]
+---@field faceFeatures? PedFaceFeature[]
+
+---@class PedConfig
+---@field model string | number
+---@field coords? {x: number, y: number, z: number}
+---@field heading? number
+---@field networked? boolean
+---@field freeze? boolean
+---@field invincible? boolean
+---@field armor? number
+---@field relationship? PedRelationship
+---@field appearance? PedAppearance
+---@field props? PedProp[]
+---@field weapon? PedWeapon
+---@field scenario? string
+---@field scenarioFlags? number
+---@field anim? PedAnim
+
+-- Cache frequently used natives
+local PlayerPedIdCached = PlayerPedId
+local DoesEntityExistCached = DoesEntityExist
+local GetEntityCoordsCached = GetEntityCoords
+local GetHashKeyCached = GetHashKey
+local CreatePedCached = CreatePed
+local SetModelAsNoLongerNeededCached = SetModelAsNoLongerNeeded
+local SetEntityAsMissionEntityCached = SetEntityAsMissionEntity
+local FreezeEntityPositionCached = FreezeEntityPosition
+local SetEntityInvincibleCached = SetEntityInvincible
+local SetPedArmourCached = SetPedArmour
+local AddRelationshipGroupCached = AddRelationshipGroup
+local SetPedRelationshipGroupHashCached = SetPedRelationshipGroupHash
+local SetPedComponentVariationCached = SetPedComponentVariation
+local SetPedPropIndexCached = SetPedPropIndex
+local ClearPedPropCached = ClearPedProp
+local SetPedFaceFeatureCached = SetPedFaceFeature
+local GiveWeaponToPedCached = GiveWeaponToPed
+local TaskStartScenarioInPlaceCached = TaskStartScenarioInPlace
+local TaskPlayAnimCached = TaskPlayAnim
+local NetworkGetNetworkIdFromEntityCached = NetworkGetNetworkIdFromEntity
+local DeleteEntityCached = DeleteEntity
+
 local createdPeds = {}
 
+---@param ped number
+---@param components? PedComponent[]
 function applyPedComponents(ped, components)
     if type(components) ~= "table" then
         return
@@ -7,7 +98,7 @@ function applyPedComponents(ped, components)
     for _, component in ipairs(components) do
         local componentId = component.componentId or component.component
         if componentId ~= nil then
-            SetPedComponentVariation(
+            SetPedComponentVariationCached(
                 ped,
                 componentId,
                 component.drawableId or component.drawable or 0,
@@ -18,6 +109,8 @@ function applyPedComponents(ped, components)
     end
 end
 
+---@param ped number
+---@param props? PedProp[]
 function applyPedProps(ped, props)
     if type(props) ~= "table" then
         return
@@ -27,7 +120,7 @@ function applyPedProps(ped, props)
         if propId ~= nil then
             local drawable = prop.drawableId or prop.drawable
             if drawable and drawable >= 0 then
-                SetPedPropIndex(
+                SetPedPropIndexCached(
                     ped,
                     propId,
                     drawable,
@@ -35,23 +128,27 @@ function applyPedProps(ped, props)
                     prop.attach ~= false
                 )
             else
-                ClearPedProp(ped, propId)
+                ClearPedPropCached(ped, propId)
             end
         end
     end
 end
 
+---@param ped number
+---@param features? PedFaceFeature[]
 function applyPedFaceFeatures(ped, features)
     if type(features) ~= "table" then
         return
     end
     for _, feature in ipairs(features) do
         if feature.index ~= nil and feature.scale ~= nil then
-            SetPedFaceFeature(ped, feature.index, feature.scale)
+            SetPedFaceFeatureCached(ped, feature.index, feature.scale)
         end
     end
 end
 
+---@param ped number
+---@param appearance? PedAppearance
 function applyPedAppearance(ped, appearance)
     if type(appearance) ~= "table" then
         return
@@ -61,45 +158,47 @@ function applyPedAppearance(ped, appearance)
     applyPedFaceFeatures(ped, appearance.faceFeatures)
 end
 
+---@param pedConfig PedConfig
+---@return number | nil, number | nil, string?
 function createPed(pedConfig)
     local config = pedConfig or {}
     if not config.model then
-        return nil, "Missing model"
+        return nil, nil, "Missing model"
     end
     local modelHash, err = loadModel(config.model)
     if not modelHash then
-        return nil, err
+        return nil, nil, err
     end
     local coords = config.coords
     if not coords then
-        local playerCoords = GetEntityCoords(PlayerPedId())
+        local playerCoords = GetEntityCoordsCached(PlayerPedIdCached())
         coords = { x = playerCoords.x, y = playerCoords.y, z = playerCoords.z }
     end
     local heading = config.heading or 0.0
     local networked = config.networked == true
-    local ped = CreatePed(4, modelHash, coords.x, coords.y, coords.z, heading, networked, false)
-    SetModelAsNoLongerNeeded(modelHash)
-    if not ped or not DoesEntityExist(ped) then
-        return nil, "Failed to create ped"
+    local ped = CreatePedCached(4, modelHash, coords.x, coords.y, coords.z, heading, networked, false)
+    SetModelAsNoLongerNeededCached(modelHash)
+    if not ped or not DoesEntityExistCached(ped) then
+        return nil, nil, "Failed to create ped"
     end
-    SetEntityAsMissionEntity(ped, true, true)
+    SetEntityAsMissionEntityCached(ped, true, true)
     if config.freeze then
-        FreezeEntityPosition(ped, true)
+        FreezeEntityPositionCached(ped, true)
     end
     if config.invincible then
-        SetEntityInvincible(ped, true)
+        SetEntityInvincibleCached(ped, true)
     end
     if config.armor then
-        SetPedArmour(ped, config.armor)
+        SetPedArmourCached(ped, config.armor)
     end
     if config.relationship then
         local groupHash = config.relationship.hash
         if config.relationship.group then
-            AddRelationshipGroup(config.relationship.group)
-            groupHash = GetHashKey(config.relationship.group)
+            AddRelationshipGroupCached(config.relationship.group)
+            groupHash = GetHashKeyCached(config.relationship.group)
         end
         if groupHash then
-            SetPedRelationshipGroupHash(ped, groupHash)
+            SetPedRelationshipGroupHashCached(ped, groupHash)
         end
     end
     if config.appearance then
@@ -109,15 +208,15 @@ function createPed(pedConfig)
         applyPedProps(ped, config.props)
     end
     if config.weapon and config.weapon.name then
-        local weaponHash = GetHashKey(config.weapon.name)
-        GiveWeaponToPed(ped, weaponHash, config.weapon.ammo or 0, false, true)
+        local weaponHash = GetHashKeyCached(config.weapon.name)
+        GiveWeaponToPedCached(ped, weaponHash, config.weapon.ammo or 0, false, true)
     end
     if config.scenario then
-        TaskStartScenarioInPlace(ped, config.scenario, config.scenarioFlags or 0, true)
+        TaskStartScenarioInPlaceCached(ped, config.scenario, config.scenarioFlags or 0, true)
     end
     if config.anim and config.anim.dict and config.anim.name then
         if loadAnimDict(config.anim.dict) then
-            TaskPlayAnim(
+            TaskPlayAnimCached(
                 ped,
                 config.anim.dict,
                 config.anim.name,
@@ -134,20 +233,21 @@ function createPed(pedConfig)
     end
     local netId = nil
     if networked then
-        netId = NetworkGetNetworkIdFromEntity(ped)
+        netId = NetworkGetNetworkIdFromEntityCached(ped)
     end
     table.insert(createdPeds, ped)
     return ped, netId
 end
 
+---@return number[]
 function getCreatedPeds()
     return createdPeds
 end
 
 function clearCreatedPeds()
     for _, ped in ipairs(createdPeds) do
-        if ped and DoesEntityExist(ped) then
-            DeleteEntity(ped)
+        if ped and DoesEntityExistCached(ped) then
+            DeleteEntityCached(ped)
         end
     end
     createdPeds = {}

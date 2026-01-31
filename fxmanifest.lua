@@ -2,8 +2,8 @@ fx_version 'cerulean'
 game 'gta5'
 
 author 'JericoFX'
-description 'Sistema de diálogos minimalista para FiveM'
-version '1.1.0'
+description 'Modern dialog system for FiveM with clean API'
+version '2.0.0'
 
 ui_page 'nui/index.html'
 
@@ -17,18 +17,27 @@ client_scripts {
     'client/utils.lua',
     'client/camera.lua',
     'client/ped.lua',
-    'client/tasks.lua',
+    'client/dialog_registry.lua',
+    'client/task_api.lua',
     'client/main.lua',
     'client/anims.lua',
     'client/exports.lua'
 }
 
-server_script 'server/exports.lua'
+server_scripts {
+    'server/config_database.lua',
+    'server/database.lua',
+    'server/events.lua',
+    'server/exports.lua'
+}
 
 files {
     'nui/index.html',
     'nui/css/style.css',
-    'nui/js/main.js'
+    'nui/js/main.js',
+    'docs/database_setup.sql'
 }
 
-dependencies {}
+dependencies {
+    'oxmysql'
+}

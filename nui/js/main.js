@@ -42,6 +42,25 @@ function showDialog(dialogData) {
 
     $('#options').empty();
 
+    // Add "Back" button if showBack is true
+    if (dialogData.showBack) {
+        const backElement = $('<div></div>')
+            .addClass('option back-button')
+            .attr('data-action', 'back');
+
+        const backLabel = $('<span></span>')
+            .addClass('label')
+            .text('← Atrás');
+
+        backElement.append(backLabel);
+
+        backElement.on('click', function() {
+            selectAction('back');
+        });
+
+        $('#options').append(backElement);
+    }
+
     if (dialogData.options && Array.isArray(dialogData.options)) {
         dialogData.options.forEach((option, index) => {
             const optionElement = $('<div></div>')
@@ -156,6 +175,32 @@ function selectOption(index) {
     })
     .catch(error => {
         console.error('[AdvanceDialog] Error selecting option:', error);
+    });
+}
+
+function selectAction(action) {
+    if (!action) return;
+    
+    if (action === 'back') {
+        console.log('[AdvanceDialog] Back action triggered');
+    }
+    
+    fetch(`https://${GetParentResourceName()}/selectOption`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json; charset=UTF-8'
+        },
+        body: JSON.stringify({
+            action: action,
+            dialogId: activeDialogId
+        })
+    })
+    .then(response => response.text())
+    .then(data => {
+        console.log('[AdvanceDialog] Action response:', data);
+    })
+    .catch(error => {
+        console.error('[AdvanceDialog] Error in action:', error);
     });
 }
 

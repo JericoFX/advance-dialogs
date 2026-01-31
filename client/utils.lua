@@ -1,3 +1,47 @@
+--[[
+    Utility Functions
+    
+    Common utility functions used throughout the Advance Dialog system.
+]]
+
+---@class MergedMetadata
+---@field [string] any
+
+---@class DialogContextLegacy
+---@field dialog? table
+---@field dialogId? string | number
+---@field option? table
+---@field ped? number
+---@field playerPed number
+---@field metadata table
+---@field optionMetadata table
+---@field mergedMetadata MergedMetadata
+
+---@class TaskTarget
+---@field player? boolean
+---@field [number] number
+
+-- Cache frequently used natives
+local PlayerPedIdCached = PlayerPedId
+local DoesEntityExistCached = DoesEntityExist
+local GetEntityCoordsCached = GetEntityCoords
+local RequestAnimDictCached = RequestAnimDict
+local HasAnimDictLoadedCached = HasAnimDictLoaded
+local WaitCached = Wait
+local GetResourceStateCached = GetResourceState
+local GetHashKeyCached = GetHashKey
+local IsModelInCdimageCached = IsModelInCdimage
+local RequestModelCached = RequestModel
+local HasModelLoadedCached = HasModelLoaded
+local NetToVehCached = NetToVeh
+local GetOffsetFromEntityInWorldCoordsCached = GetOffsetFromEntityInWorldCoords
+local GetEntityBoneIndexByNameCached = GetEntityBoneIndexByName
+local GetWorldPositionOfEntityBoneCached = GetWorldPositionOfEntityBone
+
+---@param value number
+---@param minValue number
+---@param maxValue number
+---@return number
 function clamp(value, minValue, maxValue)
     if value < minValue then
         return minValue
@@ -8,20 +52,25 @@ function clamp(value, minValue, maxValue)
     return value
 end
 
+---@param ped? number
+---@return number | nil
 function resolvePed(ped)
-    if ped and DoesEntityExist(ped) then
+    if ped and DoesEntityExistCached(ped) then
         return ped
     end
-    if activePed and DoesEntityExist(activePed) then
+    if activePed and DoesEntityExistCached(activePed) then
         return activePed
     end
-    local playerPed = PlayerPedId()
-    if playerPed and DoesEntityExist(playerPed) then
+    local playerPed = PlayerPedIdCached()
+    if playerPed and DoesEntityExistCached(playerPed) then
         return playerPed
     end
     return ped
 end
 
+---@param baseTable? table
+---@param overrideTable? table
+---@return MergedMetadata
 function mergeTables(baseTable, overrideTable)
     local merged = {}
     if type(baseTable) == "table" then
@@ -37,6 +86,10 @@ function mergeTables(baseTable, overrideTable)
     return merged
 end
 
+---@param dialogData? table
+---@param option? table
+---@param ped? number
+---@return DialogContextLegacy
 function buildContext(dialogData, option, ped)
     local dialogMetadata = (dialogData and dialogData.metadata) or {}
     local optionMetadata = (option and option.metadata) or {}
@@ -45,56 +98,65 @@ function buildContext(dialogData, option, ped)
         dialogId = dialogData and dialogData.id or nil,
         option = option,
         ped = ped,
-        playerPed = PlayerPedId(),
+        playerPed = PlayerPedIdCached(),
         metadata = dialogMetadata,
         optionMetadata = optionMetadata,
         mergedMetadata = mergeTables(dialogMetadata, optionMetadata)
     }
 end
 
+---@param dict string
+---@return boolean
 function loadAnimDict(dict)
     if not dict then
         return false
     end
-    RequestAnimDict(dict)
+    RequestAnimDictCached(dict)
     local timeout = 0
-    while not HasAnimDictLoaded(dict) and timeout < 100 do
-        Citizen.Wait(50)
+    while not HasAnimDictLoadedCached(dict) and timeout < 100 do
+        WaitCached(50)
         timeout = timeout + 1
     end
-    return HasAnimDictLoaded(dict)
+    return HasAnimDictLoadedCached(dict)
 end
 
+---@param resourceName string
+---@return boolean
 function isResourceStarted(resourceName)
-    return GetResourceState(resourceName) == "started"
+    return GetResourceStateCached(resourceName) == "started"
 end
 
+---@param model string | number
+---@return number | nil, string?
 function loadModel(model)
     local modelHash = model
     if type(model) == "string" then
-        modelHash = GetHashKey(model)
+        modelHash = GetHashKeyCached(model)
     end
-    if not modelHash or not IsModelInCdimage(modelHash) then
+    if not modelHash or not IsModelInCdimageCached(modelHash) then
         return nil, "Invalid model"
     end
-    RequestModel(modelHash)
+    RequestModelCached(modelHash)
     local timeout = 0
-    while not HasModelLoaded(modelHash) and timeout < 100 do
-        Citizen.Wait(50)
+    while not HasModelLoadedCached(modelHash) and timeout < 100 do
+        WaitCached(50)
         timeout = timeout + 1
     end
-    if not HasModelLoaded(modelHash) then
+    if not HasModelLoadedCached(modelHash) then
         return nil, "Failed to load model"
     end
     return modelHash
 end
 
+---@param target? TaskTarget
+---@param ctx DialogContextLegacy
+---@return number | nil
 function resolveTaskTarget(target, ctx)
     if not target then
         return nil
     end
     if target == "player" then
-        return ctx.playerPed or PlayerPedId()
+        return ctx.playerPed or PlayerPedIdCached()
     end
     if type(target) == "number" then
         return target
@@ -102,6 +164,9 @@ function resolveTaskTarget(target, ctx)
     return nil
 end
 
+---@param ctx DialogContextLegacy
+---@param action? table
+---@return number | nil
 function getVehicleFromContext(ctx, action)
     local netId = nil
     if action and action.vehicleNetId then
@@ -116,34 +181,39 @@ function getVehicleFromContext(ctx, action)
     if not netId then
         return nil
     end
-    local vehicle = NetToVeh(netId)
-    if vehicle and DoesEntityExist(vehicle) then
+    local vehicle = NetToVehCached(netId)
+    if vehicle and DoesEntityExistCached(vehicle) then
         return vehicle
     end
     return nil
 end
 
+---@param entity number
+---@param offset? {x?: number, y?: number, z?: number}
+---@return {x: number, y: number, z: number} | nil
 function getCoordsFromOffset(entity, offset)
-    if not entity or not DoesEntityExist(entity) then
+    if not entity or not DoesEntityExistCached(entity) then
         return nil
     end
     local off = offset or {}
-    local coords = GetOffsetFromEntityInWorldCoords(entity, off.x or 0.0, off.y or 0.0, off.z or 0.0)
+    local coords = GetOffsetFromEntityInWorldCoordsCached(entity, off.x or 0.0, off.y or 0.0, off.z or 0.0)
     return { x = coords.x, y = coords.y, z = coords.z }
 end
 
+---@param vehicle number
+---@return {x: number, y: number, z: number} | nil
 function getEngineCoords(vehicle)
-    if not vehicle or not DoesEntityExist(vehicle) then
+    if not vehicle or not DoesEntityExistCached(vehicle) then
         return nil
     end
-    local boneIndex = GetEntityBoneIndexByName(vehicle, "engine")
+    local boneIndex = GetEntityBoneIndexByNameCached(vehicle, "engine")
     if boneIndex == -1 then
-        boneIndex = GetEntityBoneIndexByName(vehicle, "bonnet")
+        boneIndex = GetEntityBoneIndexByNameCached(vehicle, "bonnet")
     end
     if boneIndex ~= -1 then
-        local coords = GetWorldPositionOfEntityBone(vehicle, boneIndex)
+        local coords = GetWorldPositionOfEntityBoneCached(vehicle, boneIndex)
         return { x = coords.x, y = coords.y, z = coords.z }
     end
-    local coords = GetEntityCoords(vehicle)
+    local coords = GetEntityCoordsCached(vehicle)
     return { x = coords.x, y = coords.y, z = coords.z }
 end

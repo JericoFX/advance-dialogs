@@ -1,16 +1,17 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Dialogs - Mock Test</title>
+    <title>Advance Dialog V2 - Mock Test</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
         body {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         .mock-controls {
@@ -18,24 +19,26 @@
             top: 20px;
             left: 20px;
             background: rgba(0, 0, 0, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 12px;
             padding: 20px;
             z-index: 10000;
-            max-width: 350px;
-            max-height: 80vh;
+            max-width: 380px;
+            max-height: 85vh;
             overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
         }
 
         .mock-controls h2 {
-            color: #ffffff;
-            font-size: 18px;
-            margin-bottom: 15px;
+            color: #00ff88;
+            font-size: 20px;
+            margin-bottom: 20px;
             text-align: center;
+            font-weight: 600;
         }
 
         .mock-section {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             padding-bottom: 15px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -48,32 +51,39 @@
 
         .mock-section h3 {
             color: #00ff88;
-            font-size: 14px;
-            margin-bottom: 10px;
+            font-size: 13px;
+            margin-bottom: 12px;
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .mock-button {
             width: 100%;
-            padding: 10px 15px;
+            padding: 12px 15px;
             margin-bottom: 8px;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 6px;
+            border-radius: 8px;
             color: #ffffff;
             font-size: 13px;
             cursor: pointer;
             transition: all 0.2s ease;
+            text-align: left;
         }
 
         .mock-button:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateX(3px);
+            background: rgba(0, 255, 136, 0.2);
+            border-color: #00ff88;
+            transform: translateX(5px);
         }
 
         .mock-button.active {
-            background: rgba(0, 255, 136, 0.2);
+            background: rgba(0, 255, 136, 0.3);
             border-color: #00ff88;
+        }
+
+        .mock-button.new-feature {
+            border-left: 3px solid #00ff88;
         }
 
         .mock-input {
@@ -97,11 +107,11 @@
         }
 
         .mock-log {
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 6px;
-            padding: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 8px;
+            padding: 12px;
             margin-top: 10px;
-            max-height: 200px;
+            max-height: 180px;
             overflow-y: auto;
             font-family: 'Courier New', monospace;
             font-size: 11px;
@@ -109,31 +119,39 @@
 
         .log-entry {
             color: #a0a0a0;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
             padding-left: 10px;
             border-left: 2px solid #00ff88;
         }
 
         .log-entry.success {
             border-left-color: #00ff88;
+            color: #00ff88;
         }
 
         .log-entry.error {
             border-left-color: #ff4444;
+            color: #ff4444;
         }
 
         .log-entry.info {
             border-left-color: #4488ff;
+            color: #4488ff;
+        }
+
+        .log-entry.warning {
+            border-left-color: #ffaa00;
+            color: #ffaa00;
         }
 
         .mock-preview {
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 6px;
-            padding: 10px;
+            border-radius: 8px;
+            padding: 12px;
             margin-top: 10px;
-            font-size: 12px;
+            font-size: 11px;
             color: #e0e0e0;
-            max-height: 150px;
+            max-height: 200px;
             overflow-y: auto;
         }
 
@@ -147,17 +165,18 @@
             top: 20px;
             right: 20px;
             background: rgba(0, 0, 0, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 12px;
             padding: 20px;
             z-index: 10000;
-            max-width: 300px;
+            max-width: 320px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
         }
 
         .instructions h3 {
             color: #00ff88;
             font-size: 16px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
 
         .instructions ul {
@@ -168,103 +187,135 @@
         .instructions li {
             color: #e0e0e0;
             font-size: 12px;
-            margin-bottom: 8px;
-            padding-left: 15px;
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
         }
 
         .instructions li::before {
-            content: "▸";
+            content: "✓";
             position: absolute;
             left: 0;
             color: #00ff88;
+            font-weight: bold;
+        }
+
+        .feature-badge {
+            display: inline-block;
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            margin-left: 8px;
         }
 
         .npc-preview {
             position: fixed;
-            bottom: 100px;
+            bottom: 120px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.5);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
-            padding: 20px 30px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            border-radius: 16px;
+            padding: 25px 35px;
             z-index: 1;
+            text-align: center;
         }
 
         .npc-preview img {
-            width: 100px;
-            height: 100px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid rgba(0, 255, 136, 0.5);
+            border: 4px solid rgba(0, 255, 136, 0.4);
+            box-shadow: 0 4px 20px rgba(0, 255, 136, 0.3);
         }
 
         .npc-name {
             color: #ffffff;
-            font-size: 14px;
+            font-size: 16px;
             text-align: center;
-            margin-top: 10px;
+            margin-top: 15px;
             font-weight: 600;
+        }
+
+        .npc-role {
+            color: #00ff88;
+            font-size: 12px;
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
     <!-- NPC Preview Placeholder -->
     <div class="npc-preview">
-        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23444'/%3E%3Ctext x='50' y='55' text-anchor='middle' fill='%23fff' font-size='40'%3E👤%3C/text%3E%3C/svg%3E" alt="NPC">
-        <div class="npc-name">NPC Preview</div>
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' fill='%23333' rx='60'/%3E%3Ctext x='60' y='70' text-anchor='middle' fill='%23fff' font-size='50'%3E👤%3C/text%3E%3C/svg%3E" alt="NPC">
+        <div class="npc-name">Advance Dialog V2</div>
+        <div class="npc-role">Modern Dialog System</div>
     </div>
 
     <!-- Mock Controls -->
     <div class="mock-controls">
-        <h2>🎮 Simple Dialogs Mock</h2>
+        <h2>🎮 Advance Dialog V2 Mock</h2>
 
         <div class="mock-section">
-            <h3>Presets</h3>
-            <button class="mock-button" onclick="showSimpleDialog()">Diálogo Simple</button>
-            <button class="mock-button" onclick="showChainDialog()">Cadena de Diálogos</button>
-            <button class="mock-button" onclick="showAnimatedDialog()">Con Animación</button>
-            <button class="mock-button" onclick="showConditionalDialog()">Con Callback</button>
-            <button class="mock-button" onclick="showLongDialog()">Texto Largo</button>
+            <h3>Basic Dialogs</h3>
+            <button class="mock-button" onclick="showSimpleDialog()">Simple Dialog</button>
+            <button class="mock-button" onclick="showChainDialog()">Dialog Chain</button>
+            <button class="mock-button" onclick="showLongDialog()">Long Text</button>
         </div>
 
         <div class="mock-section">
-            <h3>Personalizado</h3>
-            <input type="text" class="mock-input" id="speakerInput" placeholder="Nombre del NPC">
-            <textarea class="mock-input" id="textInput" placeholder="Texto del diálogo" rows="2"></textarea>
-            <input type="text" class="mock-input" id="option1Input" placeholder="Opción 1">
-            <input type="text" class="mock-input" id="option2Input" placeholder="Opción 2">
-            <button class="mock-button" onclick="showCustomDialog()">Mostrar Diálogo</button>
+            <h3>New V2 Features <span class="feature-badge">NEW</span></h3>
+            <button class="mock-button new-feature" onclick="showBackButtonDialog()">Back Button Navigation</button>
+            <button class="mock-button new-feature" onclick="showFacialAnimationDialog()">Facial Animations</button>
+            <button class="mock-button new-feature" onclick="showCameraDialog()">Camera System</button>
+            <button class="mock-button new-feature" onclick="showDataPersistenceDialog()">Data Persistence</button>
+            <button class="mock-button new-feature" onclick="showVehicleHelperDialog()">Vehicle Helpers</button>
         </div>
 
         <div class="mock-section">
-            <h3>Acciones</h3>
-            <button class="mock-button" onclick="closeDialog()">Cerrar (ESC)</button>
-            <button class="mock-button" onclick="clearLog()">Limpiar Log</button>
+            <h3>Custom Dialog</h3>
+            <input type="text" class="mock-input" id="speakerInput" placeholder="NPC Name (e.g., Mechanic)">
+            <textarea class="mock-input" id="textInput" placeholder="Dialog text..." rows="2"></textarea>
+            <input type="text" class="mock-input" id="option1Input" placeholder="Option 1 (e.g., Yes)">
+            <input type="text" class="mock-input" id="option2Input" placeholder="Option 2 (e.g., No)">
+            <button class="mock-button" onclick="showCustomDialog()">Show Custom Dialog</button>
         </div>
 
         <div class="mock-section">
-            <h3>Log</h3>
+            <h3>Actions</h3>
+            <button class="mock-button" onclick="closeDialog()">Close Dialog (ESC)</button>
+            <button class="mock-button" onclick="clearLog()">Clear Log</button>
+        </div>
+
+        <div class="mock-section">
+            <h3>Event Log</h3>
             <div class="mock-log" id="mockLog"></div>
         </div>
 
         <div class="mock-section">
-            <h3>Preview JSON</h3>
+            <h3>JSON Preview</h3>
             <div class="mock-preview" id="jsonPreview">
-                <pre>Esperando datos...</pre>
+                <pre>Waiting for data...</pre>
             </div>
         </div>
     </div>
 
     <!-- Instructions -->
     <div class="instructions">
-        <h3>📖 Instrucciones</h3>
+        <h3>📖 V2 Features</h3>
         <ul>
-            <li>Usa los presets para probar diálogos</li>
-            <li>Personaliza speaker, texto y opciones</li>
-            <li>Presiona ESC para cerrar</li>
-            <li>Revisa el log y el preview JSON</li>
-            <li>El diálogo está abajo-centro</li>
+            <li><strong>registerDialog()</strong> - Register once, use anywhere</li>
+            <li><strong>onSelect(ctx, task)</strong> - Clean linear code</li>
+            <li><strong>task.goTo()</strong> - Smart movement with timeout</li>
+            <li><strong>task.data.*</strong> - SQL persistence</li>
+            <li><strong>Facial animations</strong> - Happy, angry, surprised...</li>
+            <li><strong>Camera system</strong> - Follow, track, orbit modes</li>
+            <li><strong>Auto back button</strong> - Navigation history</li>
+            <li><strong>Vehicle helpers</strong> - Get closest, by model...</li>
+            <li><strong>Error protection</strong> - Never blocks NUI</li>
         </ul>
     </div>
 
@@ -287,141 +338,138 @@
     <script>
         // Mock GetParentResourceName function
         window.GetParentResourceName = function() {
-            return 'simple-dialogs-mock';
+            return 'advance-dialog-mock';
         };
 
-        // Mock dialog state (separate from main.js)
+        // Mock dialog state
         let mockCurrentDialog = null;
         let mockActiveDialogId = null;
+        let mockDialogHistory = [];
+        let mockDataStore = {}; // Simulates SQL persistence
 
-        // Dialog presets
+        // Dialog presets showcasing V2 features
         const dialogs = {
             simple: {
                 id: "simple_dialog",
-                speaker: "NPC Bienvenida",
-                text: "¡Bienvenido al servidor! ¿En qué puedo ayudarte?",
+                speaker: "Welcome NPC",
+                text: "Welcome to Advance Dialog V2! This system features clean API, automatic navigation, and SQL persistence.",
                 options: [
                     {
-                        label: "Ver reglas",
-                        description: "Mostrar las reglas del servidor",
-                        next: "rules_dialog"
+                        label: "Show me features",
+                        description: "Learn about V2 capabilities",
+                        next: "features_dialog"
                     },
                     {
-                        label: "Cerrar",
-                        description: "Terminar conversación",
+                        label: "Close",
                         close: true
                     }
                 ]
             },
-            rules: {
-                id: "rules_dialog",
-                speaker: "NPC Bienvenida",
-                text: "Las reglas son: 1. Respetar a todos 2. No hacer spam 3. Jugar fair. ¿Entendido?",
+            features: {
+                id: "features_dialog",
+                speaker: "System Info",
+                text: "V2 Features: registerDialog() + openDialog(), onSelect(ctx, task), task.goTo(), task.data.* for persistence, facial animations, camera system, and more!",
                 options: [
-                    { label: "¡Entendido!", close: true },
-                    { label: "¿Puedes repetir?", next: "simple_dialog" }
+                    { label: "Try navigation", next: "nav_start" },
+                    { label: "Close", close: true }
                 ]
             },
-            chain: {
-                id: "chain_start",
-                speaker: "Misterioso",
-                text: "¡Hola viajero! ¿Buscas aventura en estas tierras?",
-                animation: {
-                    type: "common",
-                    dict: "gestures@f@standing@casual",
-                    anim: "gesture_point"
-                },
+            nav_start: {
+                id: "nav_start",
+                speaker: "Navigation Demo",
+                text: "This demonstrates the automatic Back button. Go deeper into the menu chain.",
                 options: [
-                    { label: "Sí, estoy listo", next: "chain_mid" },
-                    { label: "No estoy seguro", next: "chain_hesitate" },
-                    { label: "Vete", close: true }
+                    { label: "Go deeper →", next: "nav_mid" },
+                    { label: "Close", close: true }
                 ]
             },
-            chain_mid: {
-                id: "chain_mid",
-                speaker: "Misterioso",
-                text: "¡Excelente! Tu primera misión es investigar el antiguo templo olvidado...",
+            nav_mid: {
+                id: "nav_mid",
+                speaker: "Level 2",
+                text: "You're now 2 levels deep. Notice the automatic Back button in every menu!",
                 options: [
-                    { label: "Entendido", next: "chain_end" },
-                    { label: "¿Demasiado peligroso?", close: true }
+                    { label: "Go deeper →", next: "nav_deep" },
+                    { label: "Close", close: true }
                 ]
             },
-            chain_hesitate: {
-                id: "chain_hesitate",
-                speaker: "Misterioso",
-                text: "El verdadero valor se encuentra superando el miedo...",
+            nav_deep: {
+                id: "nav_deep",
+                speaker: "Level 3",
+                text: "Deepest level! The Back button appears automatically when there's history. Each click returns you to the previous menu.",
                 options: [
-                    { label: "Vale, empezaré", next: "chain_mid" },
-                    { label: "Prefiero quedarme", close: true }
+                    { label: "Close", close: true }
                 ]
             },
-            chain_end: {
-                id: "chain_end",
-                speaker: "Misterioso",
-                text: "Busca información en el templo y regresa aquí cuando encuentres algo.",
+            facial: {
+                id: "facial_demo",
+                speaker: "Expression Master",
+                text: "Facial animation presets: happy, angry, sad, surprised, aiming, injured, concentrated, shocked, and more!",
                 options: [
                     {
-                        label: "Acepto la misión",
-                        description: "Iniciar misión principal",
-                        close: true
+                        label: "😊 Happy",
+                        description: "Play happy facial animation",
+                        onSelect: "facial_happy"
                     },
-                    { label: "Necesito más información", close: true }
-                ]
-            },
-            animated: {
-                id: "animated_dialog",
-                speaker: "NPC Entusiasta",
-                text: "¡Mira lo que he encontrado! Es increíble, ¿no crees?",
-                animation: {
-                    type: "common",
-                    dict: "anim@mp_facial_tourist",
-                    anim: "look_around_left"
-                },
-                options: [
-                    { label: "¡Impresionante!", close: true },
-                    { label: "¿Qué es eso?", next: "animated_explain" }
-                ]
-            },
-            animated_explain: {
-                id: "animated_explain",
-                speaker: "NPC Entusiasta",
-                text: "Es un artefacto antiguo que puede cambiar el destino del mundo...",
-                options: [
-                    { label: "¡Increíble!", close: true }
-                ]
-            },
-            conditional: {
-                id: "conditional_dialog",
-                speaker: "Guardia VIP",
-                text: "¡Alto! Solo los miembros VIP pueden pasar por aquí.",
-                metadata: {
-                    vipRequired: true,
-                    playerLevel: 10
-                },
-                options: [
                     {
-                        label: "Mostrar credencial VIP",
-                        description: "Verificar mi membresía",
-                        close: true
+                        label: "😠 Angry",
+                        description: "Play angry facial animation",
+                        onSelect: "facial_angry"
                     },
-                    { label: "Largo de aquí", close: true }
+                    {
+                        label: "😲 Surprised",
+                        description: "Play surprised facial animation",
+                        onSelect: "facial_surprised"
+                    },
+                    { label: "Close", close: true }
+                ]
+            },
+            camera: {
+                id: "camera_demo",
+                speaker: "Camera Operator",
+                text: "Camera modes: static (fixed position), follow (moves with target), track (fixed position, points at moving target), orbit (rotates around target).",
+                options: [
+                    { label: "Follow mode", onSelect: "camera_follow" },
+                    { label: "Track mode", onSelect: "camera_track" },
+                    { label: "Orbit mode", onSelect: "camera_orbit" },
+                    { label: "Close", close: true }
+                ]
+            },
+            persistence: {
+                id: "persistence_demo",
+                speaker: "Data Manager",
+                text: "SQL persistence with automatic cleanup: 100 entries limit per player, 30-day auto-expiration. Uses MariaDB triggers for zero Lua overhead!",
+                options: [
+                    { label: "Save test data", onSelect: "data_save" },
+                    { label: "Load test data", onSelect: "data_load" },
+                    { label: "Check completion", onSelect: "data_check" },
+                    { label: "Close", close: true }
+                ]
+            },
+            vehicle: {
+                id: "vehicle_demo",
+                speaker: "Vehicle Helper",
+                text: "Utility functions: task.vehicle.getClosest(), getByModel(), getByPlate(), getInFront(). Also task.goToVehicle() with bone support!",
+                options: [
+                    { label: "Find closest vehicle", onSelect: "veh_closest" },
+                    { label: "Go to vehicle hood", onSelect: "veh_hood" },
+                    { label: "Close", close: true }
                 ]
             },
             long: {
                 id: "long_dialog",
-                speaker: "Narrador",
-                text: "En el reino de los sueños, donde las estrellas bailan al ritmo del viento eterno, existe una leyenda antigua que cuenta la historia de un viajero perdido en el tiempo. Este viajero, buscando respuestas a preguntas que aún no había formulado, cruzó fronteras que ningún mortal había osado cruzar antes. Su viaje no era solo físico, sino también espiritual, y cada paso que daba revelaba nuevos misterios y desafíos que pondrían a prueba su determinación y su fe en el destino que le esperaba.",
+                speaker: "Storyteller",
+                text: "In the realm of dreams, where stars dance to the rhythm of eternal wind, there exists an ancient legend that tells the story of a traveler lost in time. This traveler, seeking answers to questions not yet formulated, crossed borders that no mortal had dared to cross before.",
                 options: [
-                    { label: "Continuar historia", next: "long_2" },
-                    { label: "Demasiado texto, adiós", close: true }
+                    { label: "Continue story", next: "long_2" },
+                    { label: "Close", close: true }
                 ]
             },
             long_2: {
                 id: "long_2",
-                speaker: "Narrador",
-                text: "Con el paso de los siglos, el viajero aprendió que las respuestas más profundas no se encuentran en los libros ni en los mapas, sino en los corazones de aquellos que se atreven a soñar. Y así, su historia se convirtió en leyenda, inspirando a generaciones futuras a seguir su ejemplo de valentía y curiosidad.",
+                speaker: "Storyteller",
+                text: "With the passage of centuries, the traveler learned that the deepest answers are not found in books or maps, but in the hearts of those who dare to dream. And so, their story became legend, inspiring future generations.",
                 options: [
-                    { label: "Fin", close: true }
+                    { label: "The End", close: true }
                 ]
             }
         };
@@ -438,7 +486,7 @@
 
         function clearLog() {
             document.getElementById('mockLog').innerHTML = '';
-            log('Log limpiado', 'info');
+            log('Log cleared', 'info');
         }
 
         function updateJsonPreview(data) {
@@ -446,7 +494,7 @@
             preview.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
         }
 
-        // Mock dialog functions
+        // Show dialog with V2 features
         function showDialog(dialogData) {
             mockCurrentDialog = dialogData;
 
@@ -458,6 +506,20 @@
             $('#dialog-text').text(dialogData.text || '');
 
             $('#options').empty();
+
+            // Add Back button if there's history
+            if (mockDialogHistory.length > 0) {
+                const backElement = $('<div></div>')
+                    .addClass('option back-button')
+                    .attr('data-action', 'back');
+                
+                backElement.append($('<span></span>').addClass('label').text('← Back'));
+                backElement.on('click', function() {
+                    goBack();
+                });
+                
+                $('#options').append(backElement);
+            }
 
             if (dialogData.options && Array.isArray(dialogData.options)) {
                 dialogData.options.forEach((option, index) => {
@@ -475,12 +537,11 @@
                         const description = $('<span></span>')
                             .addClass('description')
                             .text(option.description);
-
                         optionElement.append(description);
                     }
 
                     optionElement.on('click', function() {
-                        selectOption(index);
+                        handleOption(index);
                     });
 
                     $('#options').append(optionElement);
@@ -488,80 +549,165 @@
             }
 
             $('#dialog-container').removeClass('hidden');
-
             updateJsonPreview(dialogData);
-            console.log('[Mock] Dialog shown:', dialogData);
+            log(`Showing dialog: ${dialogData.id}`, 'success');
         }
 
         function hideDialog() {
             $('#dialog-container').addClass('hidden');
-
             mockCurrentDialog = null;
             mockActiveDialogId = null;
-
+            mockDialogHistory = []; // Clear history on close
             $('#options').empty();
             $('#speaker').text('');
             $('#dialog-text').text('');
-
-            console.log('[Mock] Dialog hidden');
+            log('Dialog closed', 'info');
         }
 
-        function selectOption(index) {
-            if (index === -1) {
+        function goBack() {
+            if (mockDialogHistory.length > 0) {
+                const previous = mockDialogHistory.pop();
+                showDialog(previous);
+                log('Navigated back', 'info');
+            }
+        }
+
+        function handleOption(index) {
+            if (!mockCurrentDialog || !mockCurrentDialog.options) return;
+
+            const option = mockCurrentDialog.options[index];
+            if (!option) return;
+
+            log(`Selected: ${option.label}`, 'success');
+
+            // Handle action types
+            if (option.action === 'back') {
+                goBack();
+                return;
+            }
+
+            if (option.close) {
                 hideDialog();
                 return;
             }
 
-            fetch(`https://${GetParentResourceName()}/selectOption`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json; charset=UTF-8'
-                },
-                body: JSON.stringify({
-                    index: index,
-                    dialogId: mockActiveDialogId
-                })
-            })
-            .then(response => response.text())
-            .then(data => {
-                console.log('[Mock] Option selected response:', data);
-            })
-            .catch(error => {
-                console.error('[Mock] Error selecting option:', error);
-            });
+            // Handle onSelect simulation
+            if (option.onSelect) {
+                handleOnSelect(option.onSelect);
+                return;
+            }
+
+            // Handle next dialog
+            if (option.next && dialogs[option.next]) {
+                mockDialogHistory.push(mockCurrentDialog);
+                showDialog(dialogs[option.next]);
+                return;
+            }
         }
 
-        // Dialog functions for buttons
+        function handleOnSelect(action) {
+            switch(action) {
+                case 'facial_happy':
+                    log('Playing facial animation: happy (task.playFacial)', 'success');
+                    setTimeout(() => showDialog(dialogs.facial), 500);
+                    break;
+                case 'facial_angry':
+                    log('Playing facial animation: angry (task.playFacial)', 'success');
+                    setTimeout(() => showDialog(dialogs.facial), 500);
+                    break;
+                case 'facial_surprised':
+                    log('Playing facial animation: surprised (task.playFacial)', 'success');
+                    setTimeout(() => showDialog(dialogs.facial), 500);
+                    break;
+                case 'camera_follow':
+                    log('Camera mode: follow (task.camera.follow)', 'success');
+                    setTimeout(() => showDialog(dialogs.camera), 500);
+                    break;
+                case 'camera_track':
+                    log('Camera mode: track (task.camera.track)', 'success');
+                    setTimeout(() => showDialog(dialogs.camera), 500);
+                    break;
+                case 'camera_orbit':
+                    log('Camera mode: orbit (task.camera.orbit)', 'success');
+                    setTimeout(() => showDialog(dialogs.camera), 500);
+                    break;
+                case 'data_save':
+                    mockDataStore['test_key'] = { value: 42, timestamp: Date.now() };
+                    log('Saved: task.data.set("test_key", 42)', 'success');
+                    setTimeout(() => showDialog(dialogs.persistence), 500);
+                    break;
+                case 'data_load':
+                    const data = mockDataStore['test_key'];
+                    if (data) {
+                        log(`Loaded: task.data.get("test_key") = ${data.value}`, 'success');
+                    } else {
+                        log('No data found (would return default)', 'warning');
+                    }
+                    setTimeout(() => showDialog(dialogs.persistence), 500);
+                    break;
+                case 'data_check':
+                    const isCompleted = mockDataStore['dialog_completed_test'];
+                    log(`task.data.isCompleted("test") = ${isCompleted ? 'true' : 'false'}`, 'info');
+                    setTimeout(() => showDialog(dialogs.persistence), 500);
+                    break;
+                case 'veh_closest':
+                    log('task.vehicle.getClosest(50.0) - Would return closest vehicle', 'success');
+                    setTimeout(() => showDialog(dialogs.vehicle), 500);
+                    break;
+                case 'veh_hood':
+                    log('task.goToVehicle(ped, veh, "bonnet", {x=0, y=1.5, z=0})', 'success');
+                    setTimeout(() => showDialog(dialogs.vehicle), 500);
+                    break;
+                default:
+                    log(`Unknown action: ${action}`, 'error');
+            }
+        }
+
+        // Preset dialog functions
         function showSimpleDialog() {
             showDialog(dialogs.simple);
-            log('Mostrando diálogo simple', 'success');
         }
 
         function showChainDialog() {
-            showDialog(dialogs.chain);
-            log('Iniciando cadena de diálogos', 'success');
+            mockDialogHistory = [];
+            showDialog(dialogs.nav_start);
         }
 
-        function showAnimatedDialog() {
-            showDialog(dialogs.animated);
-            log('Mostrando diálogo con animación', 'success');
+        function showBackButtonDialog() {
+            mockDialogHistory = [];
+            showDialog(dialogs.nav_start);
+            log('Back button appears automatically with history', 'info');
         }
 
-        function showConditionalDialog() {
-            showDialog(dialogs.conditional);
-            log('Mostrando diálogo con callback', 'success');
+        function showFacialAnimationDialog() {
+            showDialog(dialogs.facial);
+            log('Facial presets: happy, angry, sad, surprised, aiming, injured, concentrated', 'info');
+        }
+
+        function showCameraDialog() {
+            showDialog(dialogs.camera);
+            log('Camera modes: static, follow, track, orbit', 'info');
+        }
+
+        function showDataPersistenceDialog() {
+            showDialog(dialogs.persistence);
+            log('SQL persistence with MariaDB triggers (100 limit, 30-day expiry)', 'info');
+        }
+
+        function showVehicleHelperDialog() {
+            showDialog(dialogs.vehicle);
+            log('Vehicle helpers: getClosest, getByModel, getByPlate, getInFront', 'info');
         }
 
         function showLongDialog() {
             showDialog(dialogs.long);
-            log('Mostrando diálogo con texto largo', 'success');
         }
 
         function showCustomDialog() {
-            const speaker = document.getElementById('speakerInput').value || 'NPC';
-            const text = document.getElementById('textInput').value || '¿En qué puedo ayudarte?';
-            const option1 = document.getElementById('option1Input').value || 'Opción 1';
-            const option2 = document.getElementById('option2Input').value || 'Opción 2';
+            const speaker = document.getElementById('speakerInput').value || 'Custom NPC';
+            const text = document.getElementById('textInput').value || 'Custom dialog text here...';
+            const option1 = document.getElementById('option1Input').value || 'Option 1';
+            const option2 = document.getElementById('option2Input').value || 'Option 2';
 
             const customDialog = {
                 id: "custom_dialog",
@@ -574,70 +720,35 @@
             };
 
             showDialog(customDialog);
-            log('Mostrando diálogo personalizado', 'success');
         }
 
         function closeDialog() {
             hideDialog();
-            log('Diálogo cerrado', 'info');
         }
 
-        // Mock fetch for selectOption
+        // Mock fetch
         const originalFetch = window.fetch;
         window.fetch = function(url, options) {
-            log(`Fetch: ${url}`, 'info');
-
             if (url.includes('/selectOption')) {
                 return new Promise((resolve) => {
-                    try {
-                        const data = JSON.parse(options.body);
-                        const index = data.index;
-                        log(`Opción seleccionada: ${index}`, 'success');
-
-                        if (mockCurrentDialog && mockCurrentDialog.options && mockCurrentDialog.options[index]) {
-                            const option = mockCurrentDialog.options[index];
-
-                            if (option.next && dialogs[option.next]) {
-                                log(`Navegando a: ${option.next}`, 'info');
-                                setTimeout(() => {
-                                    showDialog(dialogs[option.next]);
-                                }, 500);
-                            } else if (option.close) {
-                                setTimeout(() => {
-                                    hideDialog();
-                                    log('Diálogo cerrado (opción)', 'info');
-                                }, 500);
-                            } else {
-                                log('Opción procesada', 'success');
-                            }
-                        }
-
-                        resolve({
-                            ok: true,
-                            text: () => Promise.resolve('OK')
-                        });
-                    } catch (e) {
-                        log(`Error: ${e.message}`, 'error');
-                        resolve({
-                            ok: false,
-                            text: () => Promise.resolve('Error')
-                        });
-                    }
+                    resolve({
+                        ok: true,
+                        text: () => Promise.resolve('OK')
+                    });
                 });
             }
-
             return originalFetch(url, options);
         };
 
         // Initialize
         $(document).ready(function() {
-            log('Mock de Simple Dialogs inicializado', 'success');
-            log('Presets disponibles: ' + Object.keys(dialogs).length, 'info');
+            log('Advance Dialog V2 Mock initialized', 'success');
+            log('Ready to showcase: onSelect, task.data.*, navigation, facial anims, cameras', 'info');
 
             // ESC key listener
             $(document).on('keydown', function(e) {
                 if (e.key === 'Escape' && mockActiveDialogId !== null) {
-                    selectOption(-1);
+                    hideDialog();
                 }
             });
         });
